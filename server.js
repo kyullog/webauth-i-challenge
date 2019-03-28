@@ -36,7 +36,11 @@ server.post("/api/login", async (req, res) => {
         const match = bcrypt.compareSync(user.password, found.password);
 
         if (match) {
-          res.status(200).json({ message: "Logged in!" });
+          req.session.name = user.name;
+          res
+            .status(200)
+            .cookie("session", "authorized")
+            .json({ message: "Logged in!" });
         } else {
           res.status(400).json({ message: "None shall pass!" });
         }
