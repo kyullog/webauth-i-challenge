@@ -1,12 +1,36 @@
 const express = require("express");
 const helmet = require("helmet");
 const bcrypt = require("bcryptjs");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const db = require("./data/helpers/users.js");
 
 const server = express();
-server.use(helmet(), express.json());
+server.use(helmet(), cookieParser(), express.json());
 
-function restricted(req, res, next) {}
+server.use(
+  session({
+    name: "notsession",
+    secret: "why is there a secret?",
+    cookie: {
+      maxAge: 60 * 1000,
+      secure: true
+    },
+    httpOnly: true,
+    resave: false,
+    saveUninitialized: false
+  })
+);
+
+function restricted(req, res, next) {
+  if (req.cookies.session === "authorized") {
+    next();
+  } else {
+    res
+      .status(400)
+      .json({ message: "Please login with authorized credentials" });
+  }
+}
 
 server.post("/api/register", async (req, res) => {
   try {
