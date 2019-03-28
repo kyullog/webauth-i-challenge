@@ -23,7 +23,7 @@ server.use(
 );
 
 function restricted(req, res, next) {
-  if (req.cookies.session === "authorized") {
+  if (req.cookies.session === req.session.name) {
     next();
   } else {
     res
@@ -63,7 +63,7 @@ server.post("/api/login", async (req, res) => {
           req.session.name = user.name;
           res
             .status(200)
-            .cookie("session", "authorized")
+            .cookie("userid", req.session.name)
             .json({ message: "Logged in!" });
         } else {
           res.status(400).json({ message: "None shall pass!" });
