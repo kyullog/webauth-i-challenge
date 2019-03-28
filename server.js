@@ -80,4 +80,14 @@ server.post("/api/login", async (req, res) => {
   }
 });
 
+server.get("/api/users", restricted, async (req, res) => {
+  try {
+    const users = await db.getUsers();
+    res.status(200).json(users);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "There was a problem getting the users" });
+  }
+});
+
 module.exports = server;
