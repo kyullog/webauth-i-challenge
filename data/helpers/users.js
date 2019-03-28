@@ -10,5 +10,9 @@ function addUser(user) {
 }
 
 function findUser(user) {
-  return db("users").where({ user });
+  return db("users")
+    .where({
+      name: user.name
+    })
+    .first();
 }
