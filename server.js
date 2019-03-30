@@ -2,19 +2,18 @@ const express = require("express");
 const helmet = require("helmet");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
-const cookieParser = require("cookie-parser");
 const db = require("./data/helpers/users.js");
 
 const server = express();
-server.use(helmet(), cookieParser(), express.json());
+server.use(helmet(), express.json());
 
 server.use(
   session({
-    name: "notsession",
-    secret: "why is there a secret?",
+    name: "webauth",
+    secret: "Don't tell the secret",
     cookie: {
       maxAge: 60 * 1000,
-      secure: true
+      secure: false
     },
     httpOnly: true,
     resave: false,
@@ -23,7 +22,7 @@ server.use(
 );
 
 function restricted(req, res, next) {
-  if (req.cookies.session === req.session.name) {
+  if (req.session && req.session.user) {
     next();
   } else {
     res
@@ -53,26 +52,20 @@ server.post("/api/register", async (req, res) => {
 
 server.post("/api/login", async (req, res) => {
   try {
-    const user = req.body;
-    if (user.name && user.password) {
-      const found = await db.findUser(user);
-      if (found) {
-        const match = bcrypt.compareSync(user.password, found.password);
+    let { name, password } = req.body;
+    const user = await db.findUser({ name });
 
-        if (match) {
-          req.session.name = user.name;
-          res
-            .status(200)
-            .cookie("userid", req.session.name)
-            .json({ message: "Logged in!" });
-        } else {
-          res.status(400).json({ message: "None shall pass!" });
-        }
+    if (user) {
+      const passCheck = bcrypt.compareSync(password, user.password);
+
+      if (passCheck) {
+        req.session.user = user;
+        res.status(200).json({ message: `Welcome ${user.name}` });
       } else {
-        res.status(400).json({ message: "Please provide correct credentials" });
+        res.status(400).json({ message: "Please provide proper credentials" });
       }
     } else {
-      res.status(400).json({ message: "Please provide valid credentials" });
+      res.status(400).json({ message: "Please provide proper credentials" });
     }
   } catch (err) {
     console.log(err);
@@ -87,6 +80,22 @@ server.get("/api/users", restricted, async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "There was a problem getting the users" });
+  }
+});
+
+server.get("/api/logout", async (req, res) => {
+  try {
+    if (req.session) {
+      req.session.destroy(err => {
+        if (err) {
+          res.status(400).json({ message: "Could not logout" });
+        } else {
+          res.send("Goodbye!");
+        }
+      });
+    }
+  } catch (err) {
+    res.status(400).json({ message: "There was a problem logging out" });
   }
 });
 
