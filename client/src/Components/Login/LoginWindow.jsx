@@ -1,7 +1,6 @@
 import React, { Component } from "react";
-import axios from "axios";
 
-const cookieCar = axios.create({ withCredentials: true });
+import axios from "../../axiosCookies.js";
 
 class LoginWindow extends Component {
   constructor() {
