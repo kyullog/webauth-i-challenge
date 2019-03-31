@@ -1,12 +1,20 @@
 const express = require("express");
 const helmet = require("helmet");
+const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const session = require("express-session");
 const knexSession = require("connect-session-knex")(session);
 const db = require("./data/helpers/users.js");
 
+const corsConfig = {
+  origin: "http://localhost:3000",
+  optionsSuccessStatus: 200,
+  // methods: "GET,PUT,POST,DELETE",
+  credentials: true
+};
+
 const server = express();
-server.use(helmet(), express.json());
+server.use(helmet(), cors(corsConfig), express.json());
 
 server.use(
   session({
