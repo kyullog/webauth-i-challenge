@@ -114,4 +114,18 @@ server.get("/api/logout", async (req, res) => {
   }
 });
 
+server.delete("/api/remove/:id", restricted, async (req, res) => {
+  const id = req.params.id;
+  try {
+    const removed = await db.removeUser(id);
+    if (removed) {
+      res.status(200).json({ message: "The user was removed" });
+    } else {
+      res.status(400).json({ message: "Invalid user" });
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 module.exports = server;
