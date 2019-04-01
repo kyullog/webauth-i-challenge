@@ -24,10 +24,16 @@ class LoginWindow extends Component {
       name: this.state.name,
       password: this.state.password
     };
-    cookieCar
+    axios
       .post(`http://127.0.0.1:2525/api/login`, user)
-      .then(res => console.log(res))
-      .catch(err => console.log(err));
+      .then(res => {
+        if (res.status === 200) {
+          this.props.history.push("/users");
+        } else {
+          this.setState({ message: res.data.message });
+        }
+      })
+      .catch(err => this.setState({ message: err.message }));
   };
 
   render() {
@@ -40,14 +46,17 @@ class LoginWindow extends Component {
             value={this.state.name}
             name="name"
             onChange={this.changeHandler}
+            placeholder="Username"
           />
           <input
             type="password"
             value={this.state.password}
             name="password"
             onChange={this.changeHandler}
+            placeholder="Password"
           />
           <button type="submit">Submit</button>
+          <p>{this.state.message}</p>
         </form>
       </div>
     );
